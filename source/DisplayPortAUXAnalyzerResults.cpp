@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "DisplayPortAUXAnalyzerResults.h"
 
 #include <AnalyzerHelpers.h>
