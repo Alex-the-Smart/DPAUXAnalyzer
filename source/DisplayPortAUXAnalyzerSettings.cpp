@@ -14,7 +14,7 @@ DisplayPortAUXAnalyzerSettings::DisplayPortAUXAnalyzerSettings()
 	mInverted( false ),
 	mBitsPerTransfer( 8 ),
 	mShiftOrder( AnalyzerEnums::MsbFirst ),
-	mBitsToIgnore( 0 ),
+	mSyncBitsNum( 16 ),
 	mTolerance( TOL25 ),
 	mAbout( 0 )
 {
@@ -49,13 +49,13 @@ DisplayPortAUXAnalyzerSettings::DisplayPortAUXAnalyzerSettings()
 	mShiftOrderInterface->AddNumber( AnalyzerEnums::MsbFirst, "Most Significant Bit Sent First", "" );
 	mShiftOrderInterface->SetNumber( mShiftOrder );
 
-/*
-	mNumBitsIgnoreInterface.reset( new AnalyzerSettingInterfaceInteger() );
-	mNumBitsIgnoreInterface->SetTitleAndTooltip( "Preamble bits to ignore",  "Specify the number of preamble bits to ignore." );
-	mNumBitsIgnoreInterface->SetMax( 0 );
-	mNumBitsIgnoreInterface->SetMin( 0 );
-	mNumBitsIgnoreInterface->SetInteger( mBitsToIgnore );
-*/
+
+	mSyncBitsNumInterface.reset( new AnalyzerSettingInterfaceInteger() );
+	mSyncBitsNumInterface->SetTitleAndTooltip( "Minimum SYNC 0s",  "Specify the minimum number of 0s to lock on SYNC" );
+	mSyncBitsNumInterface->SetMax( 32 );
+	mSyncBitsNumInterface->SetMin( 2 );
+	mSyncBitsNumInterface->SetInteger( mSyncBitsNum );
+
 	mToleranceInterface.reset( new AnalyzerSettingInterfaceNumberList() );
 	mToleranceInterface->SetTitleAndTooltip( "Tolerance", "Specify the Display Port AUX Tolerance as a percentage of period" );
 	mToleranceInterface->AddNumber( TOL25, "25% of period (default)", "Maximum allowed tolerance, +- 50% of one half period" );
@@ -65,9 +65,9 @@ DisplayPortAUXAnalyzerSettings::DisplayPortAUXAnalyzerSettings()
 
 	mAboutInterface.reset(new AnalyzerSettingInterfaceNumberList());
 	mAboutInterface->SetTitleAndTooltip("About Ananlyzer", "Here is some info about this analyzer");
-	mAboutInterface->AddNumber(0, "DP AUX Analyzer v1.0 '2018", "Display Port AUX Analyzer ver. 1.0 '2018");
+	mAboutInterface->AddNumber(0, "DP AUX Analyzer v1.1 '2018", "Display Port AUX Analyzer ver. 1.1 '2018");
 	mAboutInterface->AddNumber(1, "Written by Alex Onisimov", "Written by Alex Onisimov");
-	mAboutInterface->AddNumber(2, "onisimov@tut.by", "Email onisimov@tut.by");
+	mAboutInterface->AddNumber(2, "onisimov@tut.by", "Email to onisimov@tut.by");
 	mAboutInterface->AddNumber(3, "Contains some code by Saleae", "Some Manchester Analyzer code was used");
 	mAboutInterface->SetNumber(mAbout);
 
@@ -78,7 +78,7 @@ DisplayPortAUXAnalyzerSettings::DisplayPortAUXAnalyzerSettings()
 	AddInterface( mInvertedInterface.get() );
 	AddInterface( mBitsPerTransferInterface.get() );
 	AddInterface( mShiftOrderInterface.get() );
-//	AddInterface( mNumBitsIgnoreInterface.get() );
+	AddInterface( mSyncBitsNumInterface.get() );
 	AddInterface( mToleranceInterface.get() );
 	AddInterface( mAboutInterface.get() );
 
@@ -107,7 +107,7 @@ bool DisplayPortAUXAnalyzerSettings::SetSettingsFromInterfaces()
 	mInverted = bool( U32( mInvertedInterface->GetNumber() ) );
 	mBitsPerTransfer = U32( mBitsPerTransferInterface->GetNumber() );
 	mShiftOrder =  AnalyzerEnums::ShiftOrder( U32( mShiftOrderInterface->GetNumber() ) );
-//	mBitsToIgnore = mNumBitsIgnoreInterface->GetInteger();
+	mSyncBitsNum = mSyncBitsNumInterface->GetInteger();
 	mTolerance = DisplayPortAUXTolerance( U32( mToleranceInterface->GetNumber() ) );
 	mAbout = U32( mAboutInterface->GetNumber() );
 	ClearChannels();
@@ -131,7 +131,7 @@ void DisplayPortAUXAnalyzerSettings::LoadSettings( const char* settings )
 	text_archive >> mInverted;
 	text_archive >> mBitsPerTransfer;
 	text_archive >> *(U32*)&mShiftOrder;
-//	text_archive >> mBitsToIgnore;
+	text_archive >> mSyncBitsNum;
 
 	DisplayPortAUXTolerance tolerance;
 	if( text_archive >> *(U32*)&tolerance )
@@ -156,7 +156,7 @@ const char* DisplayPortAUXAnalyzerSettings::SaveSettings()
 	text_archive << mInverted;
 	text_archive << mBitsPerTransfer;
 	text_archive << U32( mShiftOrder );
-//	text_archive << mBitsToIgnore;
+	text_archive << mSyncBitsNum;
 	text_archive << U32( mTolerance );
 	text_archive << mAbout;
 
@@ -171,7 +171,7 @@ void DisplayPortAUXAnalyzerSettings::UpdateInterfacesFromSettings()
 	mInvertedInterface->SetNumber( mInverted );
 	mBitsPerTransferInterface->SetNumber( mBitsPerTransfer );
 	mShiftOrderInterface->SetNumber( mShiftOrder );
-//	mNumBitsIgnoreInterface->SetInteger( mBitsToIgnore );
+	mSyncBitsNumInterface->SetInteger( mSyncBitsNum );
 	mToleranceInterface->SetNumber( mTolerance );
 	mAboutInterface->SetNumber(mAbout);
 }

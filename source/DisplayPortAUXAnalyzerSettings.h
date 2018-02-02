@@ -27,7 +27,7 @@ public:
 	bool mInverted; //non-inverted(false): neg edge = 1; pos edge = 0; inverted(true): neg edge = 0; pos edge = 1;
 	U32 mBitsPerTransfer;
 	AnalyzerEnums::ShiftOrder mShiftOrder;
-	U32 mBitsToIgnore;
+	U32 mSyncBitsNum;
 	DisplayPortAUXTolerance mTolerance;
 	U32 mAbout;
 
@@ -38,7 +38,7 @@ protected:
 	std::auto_ptr< AnalyzerSettingInterfaceNumberList >	mInvertedInterface;
 	std::auto_ptr< AnalyzerSettingInterfaceNumberList > mBitsPerTransferInterface;
 	std::auto_ptr< AnalyzerSettingInterfaceNumberList >	mShiftOrderInterface;
-	std::auto_ptr< AnalyzerSettingInterfaceInteger > mNumBitsIgnoreInterface;
+	std::auto_ptr< AnalyzerSettingInterfaceInteger > mSyncBitsNumInterface;
 	std::auto_ptr< AnalyzerSettingInterfaceNumberList > mToleranceInterface;
 	std::auto_ptr< AnalyzerSettingInterfaceNumberList > mAboutInterface;
 

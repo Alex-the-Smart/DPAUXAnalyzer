@@ -33,6 +33,9 @@ void DisplayPortAUXAnalyzer::WorkerThread()
 {
 	mDisplayPortAUX = GetAnalyzerChannelData( mSettings->mInputChannel );
 
+	if (mSettings->mSyncBitsNum == 0)	// if settings was stored with previous library version, which have no such parameter
+		mSettings->mSyncBitsNum = 16;	// set to default value
+
 	mSampleRateHz = this->GetSampleRate();
 
 	double half_peroid = 1.0 / double( mSettings->mBitRate * 2 );	// Calculate half period in seconds
@@ -86,7 +89,7 @@ void DisplayPortAUXAnalyzer::WorkerThread()
 					frame.mStartingSampleInclusive = edge_location;
 				sync_count++;	// counting short periods
 			}
-			else if ((edge_distance > ((5 * mT) - mTError)) && (edge_distance < ((5 * mT) + mTError))) // long = possible START symbol
+			else if ((edge_distance > ((5 * mT) - mTError)) && (edge_distance < ((5 * mT) + mTError)) && (sync_count>=(2*mSettings->mSyncBitsNum))) // long = possible START symbol
 			{
 				BitState current_bit_state = mDisplayPortAUX->GetBitState();
 				frame.mEndingSampleInclusive = edge_location + mT;
@@ -96,7 +99,7 @@ void DisplayPortAUXAnalyzer::WorkerThread()
 					mDisplayPortAUX->AdvanceToNextEdge();
 					next_edge_location = mDisplayPortAUX->GetSampleNumber();
 					edge_distance = next_edge_location - edge_location;
-					if ((edge_distance > ((5 * mT) - mTError)) && (edge_distance < ((5 * mT) + mTError))) // long = START symbol, next data is 0. TO DO: check sync_count value
+					if ((edge_distance > ((5 * mT) - mTError)) && (edge_distance < ((5 * mT) + mTError))) // long = START symbol, next data is 0.
 					{
 						mSynchronized = true;
 						mResults->AddMarker(next_edge_location-mT, AnalyzerResults::Start, mSettings->mInputChannel);
@@ -119,7 +122,7 @@ void DisplayPortAUXAnalyzer::WorkerThread()
 						mResults->CommitResults();
 						ReportProgress(frame.mEndingSampleInclusive);
 					}
-					else if((edge_distance >((4 * mT) - mTError)) && (edge_distance < ((4 * mT) + mTError))) // long = START symbol, next data is 1. TO DO: check sync_count value
+					else if((edge_distance >((4 * mT) - mTError)) && (edge_distance < ((4 * mT) + mTError))) // long = START symbol, next data is 1.
 					{
 						mSynchronized = true;
 						mResults->AddMarker(next_edge_location, AnalyzerResults::Start, mSettings->mInputChannel);
